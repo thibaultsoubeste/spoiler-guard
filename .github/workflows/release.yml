@@ -1,0 +1,77 @@
+name: Release & Sign
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install web-ext
+        run: npm install -g web-ext
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Sign extension on AMO
+        run: |
+          web-ext sign \
+            --source-dir . \
+            --artifacts-dir ./artifacts \
+            --channel unlisted \
+            --api-key "$AMO_API_KEY" \
+            --api-secret "$AMO_API_SECRET"
+        env:
+          AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+          AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+
+      - name: Find signed xpi
+        id: xpi
+        run: |
+          XPI=$(ls artifacts/*.xpi)
+          echo "XPI_PATH=$XPI" >> "$GITHUB_OUTPUT"
+          echo "XPI_NAME=spoiler-guard-${{ steps.version.outputs.VERSION }}.xpi" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.xpi.outputs.XPI_PATH }}
+          body: "Spoiler Guard v${{ steps.version.outputs.VERSION }}"
+
+      - name: Update updates.json on gh-pages
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git fetch origin gh-pages
+          git checkout gh-pages
+          cat > updates.json << 'TEMPLATE'
+          {
+            "addons": {
+              "spoiler-guard@thibaultsoubeste": {
+                "updates": [
+                  {
+                    "version": "VERSION_PLACEHOLDER",
+                    "update_link": "https://github.com/thibaultsoubeste/spoiler-guard/releases/download/TAG_PLACEHOLDER/XPI_PLACEHOLDER"
+                  }
+                ]
+              }
+            }
+          }
+          TEMPLATE
+          sed -i "s|VERSION_PLACEHOLDER|${{ steps.version.outputs.VERSION }}|g" updates.json
+          sed -i "s|TAG_PLACEHOLDER|${GITHUB_REF_NAME}|g" updates.json
+          sed -i "s|XPI_PLACEHOLDER|${{ steps.xpi.outputs.XPI_NAME }}|g" updates.json
+          git add updates.json
+          git commit -m "Update to v${{ steps.version.outputs.VERSION }}"
+          git push origin gh-pages
