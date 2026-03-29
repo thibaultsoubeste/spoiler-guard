@@ -13,14 +13,14 @@ function formatDelta(s) {
   return sign + m + "m" + String(sec).padStart(2, "0") + "s";
 }
 
-function createSliderHTML(previewW, previewH) {
+function createSliderHTML() {
   return `
     <div class="sg-track">
       <span class="sg-label">-1h</span>
       <input type="range" min="-1000" max="1000" value="0" step="1" id="sg-range">
       <span class="sg-label">+1h</span>
+      <span id="sg-seek-display"></span>
     </div>
-    <div id="sg-seek-display"></div>
   `;
 }
 

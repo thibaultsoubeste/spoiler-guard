@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 12px 10px;
+  padding: 4px 10px;
   cursor: pointer;
 }
 
@@ -74,13 +74,12 @@
 }
 
 #sg-seek-display {
-  text-align: center;
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  height: 14px;
-  line-height: 14px;
-  margin-top: -4px;
+  min-width: 55px;
+  text-align: center;
+  user-select: none;
 }
 
 #sg-preview-container {
