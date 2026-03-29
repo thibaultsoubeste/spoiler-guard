@@ -52,7 +52,7 @@ function parseStoryboard() {
     return {
       width: parseInt(f[0]), height: parseInt(f[1]), count: parseInt(f[2]),
       cols: parseInt(f[3]), rows: parseInt(f[4]), interval: parseInt(f[5]),
-      name: f[6], sigh: f[7]?.replace(/^rs\$/, ""), level: i
+      name: f[6], sigh: f[7], level: i
     };
   });
   let best = levels[levels.length - 1];
@@ -96,26 +96,41 @@ function injectSlider() {
   let controls = document.querySelector(".ytp-chrome-bottom");
   if (!controls || document.getElementById("sg-seek-slider")) return;
 
-  let wrapper = document.createElement("div");
-  wrapper.id = "sg-seek-slider";
-  wrapper.innerHTML = `
-    <div style="position:relative;display:flex;align-items:center;gap:8px;padding:0 10px;height:20px;">
-      <span style="color:#aaa;font-size:11px;min-width:40px;text-align:right">-1h</span>
-      <input type="range" min="-3600" max="3600" value="0" step="1" id="sg-range"
-        style="flex:1;cursor:pointer;accent-color:#FF0000;">
-      <span style="color:#aaa;font-size:11px;min-width:40px">+1h</span>
-    </div>
-    <div id="sg-preview-container" style="position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
-      display:none;flex-direction:column;align-items:center;pointer-events:none;z-index:100;">
+  // Place preview above the player
+  let player = document.getElementById("movie_player");
+  let previewFloat = document.createElement("div");
+  previewFloat.id = "sg-preview-float";
+  previewFloat.innerHTML = `
+    <div id="sg-preview-container" style="position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+      display:none;flex-direction:column;align-items:center;pointer-events:none;z-index:10000;">
       <div id="sg-preview-thumb" style="width:320px;height:180px;
         border:2px solid #FF0000;border-radius:4px;overflow:hidden;"></div>
       <div id="sg-preview-label" style="color:#fff;font-size:12px;margin-top:4px;
         background:rgba(0,0,0,0.8);padding:2px 6px;border-radius:3px;"></div>
     </div>
-    <div style="text-align:center;color:#fff;font-size:12px;height:16px" id="sg-seek-display"></div>
   `;
-  wrapper.style.cssText = "position:relative;z-index:100;width:100%;";
-  controls.prepend(wrapper);
+  previewFloat.style.cssText = "position:absolute;bottom:0;left:0;right:0;pointer-events:none;z-index:10000;";
+  player.appendChild(previewFloat);
+
+  // Replace progress bar area with slider
+  let progressBar = controls.querySelector(".ytp-progress-bar-container");
+  let wrapper = document.createElement("div");
+  wrapper.id = "sg-seek-slider";
+  wrapper.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;padding:0 4px;height:16px;">
+      <span style="color:#aaa;font-size:10px">-1h</span>
+      <input type="range" min="-3600" max="3600" value="0" step="1" id="sg-range"
+        style="flex:1;cursor:pointer;accent-color:#FF0000;height:4px;">
+      <span style="color:#aaa;font-size:10px">+1h</span>
+      <span style="color:#fff;font-size:10px;min-width:50px" id="sg-seek-display"></span>
+    </div>
+  `;
+  wrapper.style.cssText = "width:100%;";
+  if (progressBar) {
+    progressBar.parentElement.insertBefore(wrapper, progressBar);
+  } else {
+    controls.prepend(wrapper);
+  }
 
   let range = document.getElementById("sg-range");
   let display = document.getElementById("sg-seek-display");
