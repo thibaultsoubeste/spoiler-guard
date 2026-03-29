@@ -2,8 +2,10 @@ name: Release & Sign
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - master
+    paths:
+      - manifest.json
 
 jobs:
   release:
@@ -12,19 +14,33 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if version changed
+        id: check
+        run: |
+          NEW=$(grep '"version"' manifest.json | head -1 | sed 's/.*"\([0-9.]*\)".*/\1/')
+          OLD=$(git show HEAD~1:manifest.json 2>/dev/null | grep '"version"' | head -1 | sed 's/.*"\([0-9.]*\)".*/\1/' || echo "")
+          echo "NEW=$NEW OLD=$OLD"
+          if [ "$NEW" = "$OLD" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "VERSION=$NEW" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: actions/setup-node@v4
+        if: steps.check.outputs.changed == 'true'
         with:
           node-version: 20
 
       - name: Install web-ext
+        if: steps.check.outputs.changed == 'true'
         run: npm install -g web-ext
 
-      - name: Extract version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-
       - name: Sign extension on AMO
+        if: steps.check.outputs.changed == 'true'
         run: |
           web-ext sign \
             --source-dir . \
@@ -37,6 +53,7 @@ jobs:
           AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
 
       - name: Find signed xpi
+        if: steps.check.outputs.changed == 'true'
         id: xpi
         run: |
           XPI=$(ls artifacts/*.xpi)
@@ -44,35 +61,37 @@ jobs:
           echo "XPI_PATH=$XPI" >> "$GITHUB_OUTPUT"
           echo "XPI_NAME=$XPI_NAME" >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub Release
+      - name: Create tag and GitHub Release
+        if: steps.check.outputs.changed == 'true'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.check.outputs.VERSION }}
           files: ${{ steps.xpi.outputs.XPI_PATH }}
-          body: "Spoiler Guard v${{ steps.version.outputs.VERSION }}"
+          body: "Spoiler Guard v${{ steps.check.outputs.VERSION }}"
 
       - name: Update updates.json on gh-pages
+        if: steps.check.outputs.changed == 'true'
         run: |
+          VERSION="${{ steps.check.outputs.VERSION }}"
+          XPI_NAME="${{ steps.xpi.outputs.XPI_NAME }}"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git fetch origin gh-pages
           git checkout gh-pages
-          cat > updates.json << 'TEMPLATE'
+          cat > updates.json << EOF
           {
             "addons": {
               "spoiler-guard@thibaultsoubeste": {
                 "updates": [
                   {
-                    "version": "VERSION_PLACEHOLDER",
-                    "update_link": "https://github.com/thibaultsoubeste/spoiler-guard/releases/download/TAG_PLACEHOLDER/XPI_PLACEHOLDER"
+                    "version": "$VERSION",
+                    "update_link": "https://github.com/thibaultsoubeste/spoiler-guard/releases/download/v$VERSION/$XPI_NAME"
                   }
                 ]
               }
             }
           }
-          TEMPLATE
-          sed -i "s|VERSION_PLACEHOLDER|${{ steps.version.outputs.VERSION }}|g" updates.json
-          sed -i "s|TAG_PLACEHOLDER|${GITHUB_REF_NAME}|g" updates.json
-          sed -i "s|XPI_PLACEHOLDER|${{ steps.xpi.outputs.XPI_NAME }}|g" updates.json
+          EOF
           git add updates.json
-          git commit -m "Update to v${{ steps.version.outputs.VERSION }}"
+          git commit -m "Update to v$VERSION"
           git push origin gh-pages
