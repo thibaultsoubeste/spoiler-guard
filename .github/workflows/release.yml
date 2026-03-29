@@ -40,8 +40,9 @@ jobs:
         id: xpi
         run: |
           XPI=$(ls artifacts/*.xpi)
+          XPI_NAME=$(basename "$XPI")
           echo "XPI_PATH=$XPI" >> "$GITHUB_OUTPUT"
-          echo "XPI_NAME=spoiler-guard-${{ steps.version.outputs.VERSION }}.xpi" >> "$GITHUB_OUTPUT"
+          echo "XPI_NAME=$XPI_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
