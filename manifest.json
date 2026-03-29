@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Twitch Spoiler Guard",
-  "version": "1.2",
-  "description": "Hides spoiler elements (preview thumbnails, progress bar, time) on Twitch VODs",
+  "name": "Spoiler Guard",
+  "version": "2.0",
+  "description": "Hides spoiler elements (preview thumbnails, progress bar, time) on Twitch and YouTube",
   "icons": {
     "48": "icon.svg"
   },
@@ -16,10 +16,15 @@
   "content_scripts": [
     {
       "matches": ["*://*.twitch.tv/*"],
-      "js": ["content.js"],
+      "js": ["content-twitch.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content-youtube.js"],
       "run_at": "document_start"
     }
   ],
-  "web_accessible_resources": ["spoiler-guard.css"],
+  "web_accessible_resources": ["spoiler-guard.css", "spoiler-guard-youtube.css"],
   "permissions": ["tabs", "*://*.cloudfront.net/*"]
 }

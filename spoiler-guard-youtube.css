@@ -1,0 +1,35 @@
+/* Hide video duration on thumbnails */
+ytd-thumbnail-overlay-time-status-renderer,
+badge-shape.yt-badge-shape--thumbnail-badge {
+  visibility: hidden !important;
+}
+
+/* Hide thumbnail images */
+ytd-thumbnail img,
+ytd-moving-thumbnail-renderer {
+  visibility: hidden !important;
+}
+
+/* Hide player time display */
+.ytp-time-display {
+  visibility: hidden !important;
+}
+
+/* Hide progress bar fill and scrubber */
+.ytp-play-progress,
+.ytp-load-progress,
+.ytp-scrubber-container,
+.ytp-progress-list {
+  visibility: hidden !important;
+}
+
+/* Hide seek preview tooltip */
+.ytp-tooltip,
+.ytp-preview {
+  display: none !important;
+}
+
+/* Hide original progress bar interaction */
+.ytp-progress-bar-container {
+  display: none !important;
+}
