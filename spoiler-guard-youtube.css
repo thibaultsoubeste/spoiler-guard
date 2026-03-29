@@ -53,9 +53,19 @@ ytd-comments {
   display: none !important;
 }
 
-/* Hide end screen video grid */
+/* Hide end screen, autoplay overlay, and next video suggestions */
 .ytp-endscreen-content,
 .ytp-ce-element,
-.ytp-show-tiles .ytp-endscreen-content {
+.ytp-ce-covering-overlay,
+.ytp-ce-covering-image,
+.ytp-show-tiles .ytp-endscreen-content,
+.ytp-pause-overlay,
+.ytp-scroll-min .ytp-pause-overlay,
+.html5-endscreen,
+.videowall-endscreen,
+.ytp-suggestion-set,
+.ytp-videowall-still,
+.ytp-autonav-endscreen-countdown-overlay,
+.ytp-autonav-endscreen-upnext-container {
   display: none !important;
 }

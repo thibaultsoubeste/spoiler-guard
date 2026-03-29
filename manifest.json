@@ -17,12 +17,14 @@
     {
       "matches": ["*://*.twitch.tv/*"],
       "js": ["slider.js", "content-twitch.js"],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "all_frames": true
     },
     {
       "matches": ["*://*.youtube.com/*"],
       "js": ["slider.js", "content-youtube.js"],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "all_frames": true
     }
   ],
   "web_accessible_resources": ["spoiler-guard.css", "spoiler-guard-youtube.css", "slider.css"],
