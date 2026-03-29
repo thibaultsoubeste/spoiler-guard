@@ -104,7 +104,7 @@ function injectSlider() {
     <div id="sg-preview-container" style="position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
       display:none;flex-direction:column;align-items:center;pointer-events:none;z-index:10000;">
       <div id="sg-preview-thumb" style="width:320px;height:180px;
-        border:2px solid #FF0000;border-radius:4px;overflow:hidden;"></div>
+        border-radius:4px;overflow:hidden;"></div>
       <div id="sg-preview-label" style="color:#fff;font-size:12px;margin-top:4px;
         background:rgba(0,0,0,0.8);padding:2px 6px;border-radius:3px;"></div>
     </div>

@@ -34,3 +34,17 @@ ytd-moving-thumbnail-renderer {
 .ytp-progress-bar-container {
   display: none !important;
 }
+
+/* Hide recommended/related videos sidebar */
+#related,
+#secondary-inner,
+ytd-watch-next-secondary-results-renderer {
+  display: none !important;
+}
+
+/* Hide end screen video grid */
+.ytp-endscreen-content,
+.ytp-ce-element,
+.ytp-show-tiles .ytp-endscreen-content {
+  display: none !important;
+}

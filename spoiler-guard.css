@@ -17,6 +17,11 @@ img[src*="cf_vods"],
   display: none !important;
 }
 
+/* Hide recommended/related video carousels */
+.preview-card-carousel {
+  display: none !important;
+}
+
 /* Hide time labels */
 .vod-seekbar-time-labels,
 [data-a-target="player-seekbar-current-time"],
