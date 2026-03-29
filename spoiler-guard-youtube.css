@@ -6,6 +6,7 @@ badge-shape.yt-badge-shape--thumbnail-badge {
 
 /* Hide thumbnail images */
 ytd-thumbnail img,
+yt-thumbnail-view-model img,
 ytd-moving-thumbnail-renderer {
   visibility: hidden !important;
 }
