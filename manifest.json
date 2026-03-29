@@ -26,5 +26,13 @@
     }
   ],
   "web_accessible_resources": ["spoiler-guard.css", "spoiler-guard-youtube.css", "slider.css"],
-  "permissions": ["tabs", "*://*.cloudfront.net/*"]
+  "permissions": ["tabs", "*://*.cloudfront.net/*"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "spoiler-guard@thibaultsoubeste",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
 }
