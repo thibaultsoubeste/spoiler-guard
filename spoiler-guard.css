@@ -1,0 +1,25 @@
+/* Hide original seekbar entirely */
+[data-a-target="player-seekbar"] {
+  display: none !important;
+}
+
+/* Hide thumbnail duration on video cards */
+.tw-media-card-stat {
+  visibility: hidden !important;
+}
+
+/* Hide all stream/VOD preview thumbnails and carousel player */
+img[src*="previews-ttv"],
+img[src*="cf_vods"],
+.preview-card-thumbnail__image img,
+.video-preview-overlay,
+.front-page-carousel {
+  display: none !important;
+}
+
+/* Hide time labels */
+.vod-seekbar-time-labels,
+[data-a-target="player-seekbar-current-time"],
+[data-a-target="player-seekbar-duration"] {
+  visibility: hidden !important;
+}
