@@ -30,6 +30,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "spoiler-guard@thibaultsoubeste",
+      "update_url": "https://thibaultsoubeste.github.io/spoiler-guard/updates.json",
       "data_collection_permissions": {
         "required": ["none"]
       }
