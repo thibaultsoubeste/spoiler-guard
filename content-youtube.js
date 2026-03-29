@@ -3,8 +3,14 @@ style.rel = "stylesheet";
 style.href = browser.runtime.getURL("spoiler-guard-youtube.css");
 document.documentElement.appendChild(style);
 
+let sliderStyle = document.createElement("link");
+sliderStyle.rel = "stylesheet";
+sliderStyle.href = browser.runtime.getURL("slider.css");
+document.documentElement.appendChild(sliderStyle);
+
 browser.runtime.onMessage.addListener((msg) => {
   style.disabled = !msg.enabled;
+  sliderStyle.disabled = !msg.enabled;
   let slider = document.getElementById("sg-seek-slider");
   if (slider) slider.style.display = msg.enabled ? "" : "none";
 });
@@ -26,7 +32,6 @@ extractor.textContent = `
       let iv = setInterval(() => { if (extract()) clearInterval(iv); }, 1000);
       setTimeout(() => clearInterval(iv), 15000);
     }
-    // Re-extract on navigation (YouTube SPA)
     let oldHref = location.href;
     new MutationObserver(() => {
       if (location.href !== oldHref) {
@@ -66,7 +71,8 @@ function getStoryboardUrl(pageIdx) {
   return sbData.baseUrl.replace("$N", name) + "&sigh=" + sbData.sigh;
 }
 
-function getPreviewStyle(targetTime) {
+async function getPreview(targetTime) {
+  if (!sbData) sbData = parseStoryboard();
   if (!sbData || sbData.interval === 0) return null;
   let intervalSec = sbData.interval / 1000;
   let idx = Math.floor(targetTime / intervalSec);
@@ -79,102 +85,37 @@ function getPreviewStyle(targetTime) {
   if (!url) return null;
   return {
     url, x: col * sbData.width, y: row * sbData.height,
-    w: sbData.width, h: sbData.height,
     totalW: sbData.width * sbData.cols, totalH: sbData.height * sbData.rows
   };
-}
-
-function formatDelta(s) {
-  let sign = s < 0 ? "-" : "+";
-  let abs = Math.abs(s);
-  let m = Math.floor(abs / 60);
-  let sec = abs % 60;
-  return sign + m + "m" + String(sec).padStart(2, "0") + "s";
 }
 
 function injectSlider() {
   let controls = document.querySelector(".ytp-chrome-bottom");
   if (!controls || document.getElementById("sg-seek-slider")) return;
 
-  // Place preview above the player
   let player = document.getElementById("movie_player");
+
+  // Preview floats above player
   let previewFloat = document.createElement("div");
   previewFloat.id = "sg-preview-float";
-  previewFloat.innerHTML = `
-    <div id="sg-preview-container" style="position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
-      display:none;flex-direction:column;align-items:center;pointer-events:none;z-index:10000;">
-      <div id="sg-preview-thumb" style="width:320px;height:180px;
-        border-radius:4px;overflow:hidden;"></div>
-      <div id="sg-preview-label" style="color:#fff;font-size:12px;margin-top:4px;
-        background:rgba(0,0,0,0.8);padding:2px 6px;border-radius:3px;"></div>
-    </div>
-  `;
+  previewFloat.innerHTML = createPreviewHTML(320, 180);
   previewFloat.style.cssText = "position:absolute;bottom:0;left:0;right:0;pointer-events:none;z-index:10000;";
   player.appendChild(previewFloat);
+  document.getElementById("sg-preview-container").style.bottom = "80px";
 
-  // Replace progress bar area with slider
+  // Slider replaces progress bar
   let progressBar = controls.querySelector(".ytp-progress-bar-container");
   let wrapper = document.createElement("div");
   wrapper.id = "sg-seek-slider";
-  wrapper.innerHTML = `
-    <div style="display:flex;align-items:center;gap:6px;padding:0 4px;height:16px;">
-      <span style="color:#aaa;font-size:10px">-1h</span>
-      <input type="range" min="-3600" max="3600" value="0" step="1" id="sg-range"
-        style="flex:1;cursor:pointer;accent-color:#FF0000;height:4px;">
-      <span style="color:#aaa;font-size:10px">+1h</span>
-      <span style="color:#fff;font-size:10px;min-width:50px" id="sg-seek-display"></span>
-    </div>
-  `;
-  wrapper.style.cssText = "width:100%;";
+  wrapper.style.setProperty("--sg-accent", "#FF0000");
+  wrapper.innerHTML = createSliderHTML();
   if (progressBar) {
     progressBar.parentElement.insertBefore(wrapper, progressBar);
   } else {
     controls.prepend(wrapper);
   }
 
-  let range = document.getElementById("sg-range");
-  let display = document.getElementById("sg-seek-display");
-  let previewContainer = document.getElementById("sg-preview-container");
-  let previewThumb = document.getElementById("sg-preview-thumb");
-  let previewLabel = document.getElementById("sg-preview-label");
-
-  range.addEventListener("input", () => {
-    let v = parseInt(range.value);
-    display.textContent = v === 0 ? "" : formatDelta(v);
-
-    if (!sbData) sbData = parseStoryboard();
-
-    let video = document.querySelector("video");
-    if (!video || v === 0) {
-      previewContainer.style.display = "none";
-      return;
-    }
-
-    let targetTime = Math.max(0, Math.min(video.duration, video.currentTime + v));
-    let preview = getPreviewStyle(targetTime);
-    if (preview) {
-      previewThumb.style.backgroundImage = `url(${preview.url})`;
-      previewThumb.style.backgroundPosition = `-${preview.x}px -${preview.y}px`;
-      previewThumb.style.backgroundSize = `${preview.totalW}px ${preview.totalH}px`;
-      previewLabel.textContent = formatDelta(v);
-      previewContainer.style.display = "flex";
-    } else {
-      previewContainer.style.display = "none";
-    }
-  });
-
-  range.addEventListener("change", () => {
-    let v = parseInt(range.value);
-    if (v !== 0) {
-      let video = document.querySelector("video");
-      if (video) {
-        video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + v));
-      }
-    }
-    range.value = 0;
-    display.textContent = "";
-    previewContainer.style.display = "none";
-  });
+  setupSliderEvents(getPreview);
 }
 
 let obs = new MutationObserver(() => injectSlider());

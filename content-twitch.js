@@ -3,8 +3,14 @@ style.rel = "stylesheet";
 style.href = browser.runtime.getURL("spoiler-guard.css");
 document.documentElement.appendChild(style);
 
+let sliderStyle = document.createElement("link");
+sliderStyle.rel = "stylesheet";
+sliderStyle.href = browser.runtime.getURL("slider.css");
+document.documentElement.appendChild(sliderStyle);
+
 browser.runtime.onMessage.addListener((msg) => {
   style.disabled = !msg.enabled;
+  sliderStyle.disabled = !msg.enabled;
   let slider = document.getElementById("sg-seek-slider");
   if (slider) slider.style.display = msg.enabled ? "" : "none";
 });
@@ -31,7 +37,8 @@ async function loadStoryboard() {
   storyboardLoading = false;
 }
 
-function getPreviewStyle(targetTime) {
+async function getPreview(targetTime) {
+  if (!storyboardData) await loadStoryboard();
   if (!storyboardData) return null;
   let idx = Math.floor(targetTime / storyboardData.interval);
   let perImage = storyboardData.cols * storyboardData.rows;
@@ -41,17 +48,11 @@ function getPreviewStyle(targetTime) {
   let row = Math.floor(posInImg / storyboardData.cols);
   if (imgIdx >= storyboardData.images.length) return null;
   let url = storyboardBase + storyboardData.images[imgIdx];
-  let x = col * storyboardData.width;
-  let y = row * storyboardData.height;
-  return { url, x, y, w: storyboardData.width, h: storyboardData.height };
-}
-
-function formatDelta(s) {
-  let sign = s < 0 ? "-" : "+";
-  let abs = Math.abs(s);
-  let m = Math.floor(abs / 60);
-  let sec = abs % 60;
-  return sign + m + "m" + String(sec).padStart(2, "0") + "s";
+  return {
+    url, x: col * storyboardData.width, y: row * storyboardData.height,
+    totalW: storyboardData.width * storyboardData.cols,
+    totalH: storyboardData.height * storyboardData.rows
+  };
 }
 
 function injectSlider() {
@@ -62,68 +63,17 @@ function injectSlider() {
 
   let wrapper = document.createElement("div");
   wrapper.id = "sg-seek-slider";
-  wrapper.innerHTML = `
-    <div style="position:relative;display:flex;align-items:center;gap:8px;padding:0 10px;height:20px;">
-      <span style="color:#aaa;font-size:11px;min-width:40px;text-align:right">-1h</span>
-      <input type="range" min="-3600" max="3600" value="0" step="1" id="sg-range"
-        style="flex:1;cursor:pointer;accent-color:#9146FF;">
-      <span style="color:#aaa;font-size:11px;min-width:40px">+1h</span>
-    </div>
-    <div id="sg-preview-container" style="position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
-      display:none;flex-direction:column;align-items:center;pointer-events:none;z-index:100;">
-      <div id="sg-preview-thumb" style="width:220px;height:124px;
-        border:2px solid #9146FF;border-radius:4px;overflow:hidden;"></div>
-      <div id="sg-preview-label" style="color:#fff;font-size:12px;margin-top:4px;
-        background:rgba(0,0,0,0.8);padding:2px 6px;border-radius:3px;"></div>
-    </div>
-    <div style="text-align:center;color:#fff;font-size:12px;height:16px" id="sg-seek-display"></div>
-  `;
-  wrapper.style.cssText = "position:relative;z-index:10;width:100%;";
+  wrapper.style.setProperty("--sg-accent", "#9146FF");
+  wrapper.innerHTML = createSliderHTML();
   container.appendChild(wrapper);
 
-  let range = document.getElementById("sg-range");
-  let display = document.getElementById("sg-seek-display");
-  let previewContainer = document.getElementById("sg-preview-container");
-  let previewThumb = document.getElementById("sg-preview-thumb");
-  let previewLabel = document.getElementById("sg-preview-label");
+  let previewFloat = document.createElement("div");
+  previewFloat.innerHTML = createPreviewHTML(220, 124);
+  previewFloat.style.cssText = "position:absolute;bottom:60px;left:0;right:0;pointer-events:none;z-index:10000;";
+  wrapper.appendChild(previewFloat);
+  document.getElementById("sg-preview-container").style.bottom = "0";
 
-  range.addEventListener("input", async () => {
-    let v = parseInt(range.value);
-    display.textContent = v === 0 ? "" : formatDelta(v);
-
-    if (!storyboardData) await loadStoryboard();
-
-    let video = document.querySelector("video");
-    if (!video || v === 0) {
-      previewContainer.style.display = "none";
-      return;
-    }
-
-    let targetTime = Math.max(0, Math.min(video.duration, video.currentTime + v));
-    let preview = getPreviewStyle(targetTime);
-    if (preview) {
-      previewThumb.style.backgroundImage = `url(${preview.url})`;
-      previewThumb.style.backgroundPosition = `-${preview.x}px -${preview.y}px`;
-      previewThumb.style.backgroundSize = `${preview.w * storyboardData.cols}px ${preview.h * storyboardData.rows}px`;
-      previewLabel.textContent = formatDelta(v);
-      previewContainer.style.display = "flex";
-    } else {
-      previewContainer.style.display = "none";
-    }
-  });
-
-  range.addEventListener("change", () => {
-    let v = parseInt(range.value);
-    if (v !== 0) {
-      let video = document.querySelector("video");
-      if (video) {
-        video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + v));
-      }
-    }
-    range.value = 0;
-    display.textContent = "";
-    previewContainer.style.display = "none";
-  });
+  setupSliderEvents(getPreview);
 }
 
 let obs = new MutationObserver(() => injectSlider());
