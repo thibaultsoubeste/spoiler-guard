@@ -35,6 +35,12 @@ ytd-moving-thumbnail-renderer {
   display: none !important;
 }
 
+/* Hide picture-in-picture button */
+.ytp-pip-button,
+.ytp-miniplayer-button {
+  display: none !important;
+}
+
 /* Expand chrome bottom to fit slider */
 .ytp-chrome-bottom {
   height: auto !important;

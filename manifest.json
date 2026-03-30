@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Spoiler Guard",
-  "version": "2.2",
+  "version": "2.3",
   "description": "Hides spoiler elements (preview thumbnails, progress bar, time) on Twitch and YouTube",
   "icons": {
     "48": "icon.svg"

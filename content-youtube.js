@@ -1,3 +1,5 @@
+let inIframe = window !== window.top;
+
 let style = document.createElement("link");
 style.rel = "stylesheet";
 style.href = browser.runtime.getURL("spoiler-guard-youtube.css");
@@ -7,6 +9,20 @@ let sliderStyle = document.createElement("link");
 sliderStyle.rel = "stylesheet";
 sliderStyle.href = browser.runtime.getURL("slider.css");
 document.documentElement.appendChild(sliderStyle);
+
+if (inIframe) {
+  let embedStyle = document.createElement("style");
+  embedStyle.textContent = `
+    /* Hide video title in embeds */
+    .ytp-title,
+    .ytp-title-text,
+    .ytp-chrome-top {
+      display: none !important;
+    }
+  `;
+  embedStyle.id = "sg-embed-style";
+  document.documentElement.appendChild(embedStyle);
+}
 
 browser.runtime.onMessage.addListener((msg) => {
   style.disabled = !msg.enabled;

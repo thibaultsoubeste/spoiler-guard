@@ -1,3 +1,5 @@
+let inIframe = window !== window.top;
+
 let style = document.createElement("link");
 style.rel = "stylesheet";
 style.href = browser.runtime.getURL("spoiler-guard.css");
@@ -7,6 +9,23 @@ let sliderStyle = document.createElement("link");
 sliderStyle.rel = "stylesheet";
 sliderStyle.href = browser.runtime.getURL("slider.css");
 document.documentElement.appendChild(sliderStyle);
+
+if (inIframe) {
+  let embedStyle = document.createElement("style");
+  embedStyle.textContent = `
+    /* Hide stream title/info in embeds */
+    .top-bar,
+    .channel-info-content,
+    [data-a-target="stream-title"],
+    [data-a-target="player-info-title"],
+    .metadata-layout__support,
+    .stream-info-card {
+      display: none !important;
+    }
+  `;
+  embedStyle.id = "sg-embed-style";
+  document.documentElement.appendChild(embedStyle);
+}
 
 browser.runtime.onMessage.addListener((msg) => {
   style.disabled = !msg.enabled;
