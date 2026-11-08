@@ -6,6 +6,8 @@ Firefox extension that hides spoilers on Twitch and YouTube VODs.
 
 - Video thumbnails (home, search, sidebar, VOD pages)
 - Duration labels on thumbnails
+- YouTube hover previews
+- YouTube video card titles, except on hover or keyboard focus
 - Player time display and progress bar
 - Seek preview tooltips
 - YouTube recommended/related videos
@@ -19,6 +21,7 @@ Firefox extension that hides spoilers on Twitch and YouTube VODs.
 - Toolbar button to toggle on/off, remembered across tabs and Firefox restarts
 
 Twitch channel video listings stay visible so VODs can still be found by title.
+YouTube thumbnails keep the watched-progress strip.
 Switching off restores the normal player controls and removes the custom slider.
 
 ## Install

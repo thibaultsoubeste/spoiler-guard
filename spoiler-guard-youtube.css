@@ -7,9 +7,25 @@ badge-shape.ytBadgeShapeThumbnailBadge {
 
 /* Hide thumbnail images */
 ytd-thumbnail img,
-yt-thumbnail-view-model img,
-ytd-moving-thumbnail-renderer {
+yt-thumbnail-view-model img {
   visibility: hidden !important;
+}
+
+/* Preserve watched-progress strips on thumbnails */
+ytd-thumbnail-overlay-resume-playback-renderer,
+yt-thumbnail-overlay-progress-bar-view-model {
+  visibility: visible !important;
+}
+
+/* Hide hover preview players and animated thumbnails */
+ytd-video-preview,
+ytd-moving-thumbnail-renderer {
+  display: none !important;
+}
+
+/* Reveal card titles on hover or keyboard focus */
+:is(a#video-title, a#video-title-link, yt-lockup-metadata-view-model h3):not(:hover):not(:focus-within) {
+  opacity: 0 !important;
 }
 
 /* Hide player time display */
