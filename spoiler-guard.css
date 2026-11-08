@@ -17,11 +17,6 @@ img[src*="cf_vods"],
   display: none !important;
 }
 
-/* Hide recommended/related video carousels */
-.preview-card-carousel {
-  display: none !important;
-}
-
 /* Hide picture-in-picture button */
 [data-a-target="player-pip-button"],
 .picture-in-picture-overlay {

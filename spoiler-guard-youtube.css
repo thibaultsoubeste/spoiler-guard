@@ -1,6 +1,7 @@
 /* Hide video duration on thumbnails */
 ytd-thumbnail-overlay-time-status-renderer,
-badge-shape.yt-badge-shape--thumbnail-badge {
+badge-shape.yt-badge-shape--thumbnail-badge,
+badge-shape.ytBadgeShapeThumbnailBadge {
   visibility: hidden !important;
 }
 
@@ -16,11 +17,24 @@ ytd-moving-thumbnail-renderer {
   visibility: hidden !important;
 }
 
-/* Hide progress bar fill and scrubber */
+/* Hide progress bar fill, scrubber, chapters, markers, and heatmap */
+.ytp-progress-bar-container,
+.ytp-progress-bar-padding,
+.ytp-progress-bar,
 .ytp-play-progress,
 .ytp-load-progress,
+.ytp-hover-progress,
+.ytp-ad-progress,
 .ytp-scrubber-container,
-.ytp-progress-list {
+.ytp-scrubber-button,
+.ytp-progress-list,
+.ytp-chapters-container,
+.ytp-chapter-hover-container,
+.ytp-timed-markers-container,
+.ytp-heat-map-container {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
   visibility: hidden !important;
 }
 
@@ -30,9 +44,10 @@ ytd-moving-thumbnail-renderer {
   display: none !important;
 }
 
-/* Hide original progress bar interaction */
-.ytp-progress-bar-container {
-  display: none !important;
+#movie_player.ytp-autohide #sg-seek-slider,
+#movie_player.ytp-autohide #sg-preview-float {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Hide picture-in-picture button */

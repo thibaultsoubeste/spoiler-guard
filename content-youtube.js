@@ -1,36 +1,3 @@
-let inIframe = window !== window.top;
-
-let style = document.createElement("link");
-style.rel = "stylesheet";
-style.href = browser.runtime.getURL("spoiler-guard-youtube.css");
-document.documentElement.appendChild(style);
-
-let sliderStyle = document.createElement("link");
-sliderStyle.rel = "stylesheet";
-sliderStyle.href = browser.runtime.getURL("slider.css");
-document.documentElement.appendChild(sliderStyle);
-
-if (inIframe) {
-  let embedStyle = document.createElement("style");
-  embedStyle.textContent = `
-    /* Hide video title in embeds */
-    .ytp-title,
-    .ytp-title-text,
-    .ytp-chrome-top {
-      display: none !important;
-    }
-  `;
-  embedStyle.id = "sg-embed-style";
-  document.documentElement.appendChild(embedStyle);
-}
-
-browser.runtime.onMessage.addListener((msg) => {
-  style.disabled = !msg.enabled;
-  sliderStyle.disabled = !msg.enabled;
-  let slider = document.getElementById("sg-seek-slider");
-  if (slider) slider.style.display = msg.enabled ? "" : "none";
-});
-
 // Inject page-context script to extract storyboard data
 let extractor = document.createElement("script");
 extractor.textContent = `
@@ -56,7 +23,7 @@ extractor.textContent = `
         let iv = setInterval(() => { if (extract()) clearInterval(iv); }, 1000);
         setTimeout(() => clearInterval(iv), 15000);
       }
-    }).observe(document.body, { childList: true, subtree: true });
+    }).observe(document.documentElement, { childList: true, subtree: true });
   })();
 `;
 document.documentElement.appendChild(extractor);
@@ -106,10 +73,8 @@ async function getPreview(targetTime) {
 }
 
 function injectSlider() {
-  let controls = document.querySelector(".ytp-chrome-bottom");
-  if (!controls || document.getElementById("sg-seek-slider")) return;
-
   let player = document.getElementById("movie_player");
+  if (!player || document.getElementById("sg-seek-slider")) return;
 
   // Preview floats above player
   let previewFloat = document.createElement("div");
@@ -120,19 +85,14 @@ function injectSlider() {
   document.getElementById("sg-preview-container").style.bottom = "80px";
 
   // Slider replaces progress bar
-  let progressBar = controls.querySelector(".ytp-progress-bar-container");
   let wrapper = document.createElement("div");
   wrapper.id = "sg-seek-slider";
+  wrapper.style.cssText = "position:absolute;left:12px;right:12px;bottom:42px;width:auto;z-index:10000;";
   wrapper.style.setProperty("--sg-accent", "#FF0000");
   wrapper.innerHTML = createSliderHTML();
-  if (progressBar) {
-    progressBar.parentElement.insertBefore(wrapper, progressBar);
-  } else {
-    controls.prepend(wrapper);
-  }
+  player.appendChild(wrapper);
 
   setupSliderEvents(getPreview);
 }
 
-let obs = new MutationObserver(() => injectSlider());
-obs.observe(document.documentElement, { childList: true, subtree: true });
+setupSpoilerGuard("spoiler-guard-youtube.css", ".ytp-title, .ytp-title-text, .ytp-chrome-top", injectSlider);

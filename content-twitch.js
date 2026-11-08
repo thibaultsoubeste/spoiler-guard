@@ -1,39 +1,3 @@
-let inIframe = window !== window.top;
-
-let style = document.createElement("link");
-style.rel = "stylesheet";
-style.href = browser.runtime.getURL("spoiler-guard.css");
-document.documentElement.appendChild(style);
-
-let sliderStyle = document.createElement("link");
-sliderStyle.rel = "stylesheet";
-sliderStyle.href = browser.runtime.getURL("slider.css");
-document.documentElement.appendChild(sliderStyle);
-
-if (inIframe) {
-  let embedStyle = document.createElement("style");
-  embedStyle.textContent = `
-    /* Hide stream title/info in embeds */
-    .top-bar,
-    .channel-info-content,
-    [data-a-target="stream-title"],
-    [data-a-target="player-info-title"],
-    .metadata-layout__support,
-    .stream-info-card {
-      display: none !important;
-    }
-  `;
-  embedStyle.id = "sg-embed-style";
-  document.documentElement.appendChild(embedStyle);
-}
-
-browser.runtime.onMessage.addListener((msg) => {
-  style.disabled = !msg.enabled;
-  sliderStyle.disabled = !msg.enabled;
-  let slider = document.getElementById("sg-seek-slider");
-  if (slider) slider.style.display = msg.enabled ? "" : "none";
-});
-
 let storyboardData = null;
 let storyboardBase = null;
 let storyboardLoading = false;
@@ -95,5 +59,11 @@ function injectSlider() {
   setupSliderEvents(getPreview);
 }
 
-let obs = new MutationObserver(() => injectSlider());
-obs.observe(document.documentElement, { childList: true, subtree: true });
+setupSpoilerGuard("spoiler-guard.css", `
+  .top-bar,
+  .channel-info-content,
+  [data-a-target="stream-title"],
+  [data-a-target="player-info-title"],
+  .metadata-layout__support,
+  .stream-info-card
+`, injectSlider);
